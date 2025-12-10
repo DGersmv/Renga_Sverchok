@@ -54,6 +54,7 @@
     <Copy SourceFiles="$(TargetDir)$(TargetName)Icon.png" DestinationFolder="$(RengaPluginsPath)" Condition="Exists('$(TargetDir)$(TargetName)Icon.png')" />
     <Copy SourceFiles="$(TargetDir)Interop.Renga.dll" DestinationFolder="$(RengaPluginsPath)" Condition="Exists('$(TargetDir)Interop.Renga.dll')" />
     <Copy SourceFiles="$(TargetDir)Renga.NET8.PluginUtility.dll" DestinationFolder="$(RengaPluginsPath)" Condition="Exists('$(TargetDir)Renga.NET8.PluginUtility.dll')" />
+    <Copy SourceFiles="$(TargetDir)Newtonsoft.Json.dll" DestinationFolder="$(RengaPluginsPath)" Condition="Exists('$(TargetDir)Newtonsoft.Json.dll')" />
     <Message Text="RengaGH.dll and dependencies copied to $(RengaPluginsPath)" Importance="high" />
   </Target>
 </Project>

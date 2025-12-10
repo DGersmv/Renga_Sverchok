@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Text;
+using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,8 +29,24 @@ namespace RengaPlugin
         private bool isServerRunning = false;
         private int serverPort = 50100; // Default port
         private Dictionary<string, int> guidToColumnIdMap = new Dictionary<string, int>(); // Grasshopper Point GUID -> Renga Column ID
+        private static readonly string LogFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Renga", "RengaGH_Server.log");
 
         private List<Renga.ActionEventSource> m_eventSources = new List<Renga.ActionEventSource>();
+        
+        private static void Log(string message)
+        {
+            try
+            {
+                var logDir = Path.GetDirectoryName(LogFilePath);
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+                
+                var logMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}";
+                File.AppendAllText(LogFilePath, logMessage + Environment.NewLine);
+                System.Diagnostics.Debug.WriteLine(logMessage);
+            }
+            catch { }
+        }
 
         public bool Initialize(string pluginFolder)
         {
@@ -135,7 +152,7 @@ namespace RengaPlugin
                 _ = Task.Run(async () => await AcceptConnectionsAsync());
 
                 // Server started successfully - message will be shown in settings form
-                System.Diagnostics.Debug.WriteLine($"TCP server started on port {port}");
+                Log($"TCP server started on port {port}");
             }
             catch (Exception ex)
             {
@@ -154,22 +171,40 @@ namespace RengaPlugin
 
         private async Task AcceptConnectionsAsync()
         {
+            Log($"=== Server started accepting connections on port {serverPort} ===");
+            
             while (isServerRunning)
             {
                 try
                 {
+                    Log("Waiting for client connection...");
                     var client = await tcpListener!.AcceptTcpClientAsync();
-                    _ = Task.Run(async () => await HandleClientAsync(client));
+                    Log($"Client connection accepted from {client.Client.RemoteEndPoint}");
+                    Log($"Starting HandleClientAsync task for {client.Client.RemoteEndPoint}");
+                    _ = Task.Run(async () => 
+                    {
+                        try
+                        {
+                            await HandleClientAsync(client);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"Error in HandleClientAsync task: {ex.Message}");
+                            Log($"Stack trace: {ex.StackTrace}");
+                        }
+                    });
                 }
                 catch (ObjectDisposedException)
                 {
                     // Server was stopped
+                    Log("Server stopped accepting connections");
                     break;
                 }
                 catch (Exception ex)
                 {
                     // Log error but continue accepting connections
-                    System.Diagnostics.Debug.WriteLine($"Error accepting connection: {ex.Message}");
+                    Log($"Error accepting connection: {ex.Message}");
+                    Log($"Stack trace: {ex.StackTrace}");
                 }
             }
         }
@@ -178,47 +213,80 @@ namespace RengaPlugin
         {
             try
             {
+                Log($"=== New client connected from {client.Client.RemoteEndPoint} ===");
+                Log($"Client connected: {client.Connected}");
+                
                 var stream = client.GetStream();
-                stream.ReadTimeout = 5000; // 5 second timeout
+                Log($"Stream obtained, setting read timeout to 10000ms");
+                stream.ReadTimeout = 10000; // 10 second timeout
                 
-                // Read all data - wait for complete message
+                Log("Starting to read data from client...");
+                
+                // Read all data - try to read directly without checking DataAvailable first
                 var buffer = new List<byte>();
-                var readBuffer = new byte[4096];
+                var readBuffer = new byte[8192];
+                bool dataReceived = false;
                 
-                // Read until no more data available or timeout
-                while (client.Connected)
+                try
                 {
-                    int bytesRead = 0;
-                    try
-                    {
-                        bytesRead = await stream.ReadAsync(readBuffer, 0, readBuffer.Length);
-                    }
-                    catch (System.IO.IOException)
-                    {
-                        // Timeout or connection closed
-                        break;
-                    }
+                    // First, try to read data directly (may block until data arrives or timeout)
+                    Log("Attempting to read data from stream...");
+                    int bytesRead = await stream.ReadAsync(readBuffer, 0, readBuffer.Length);
                     
-                    if (bytesRead == 0) break;
-                    
-                    for (int i = 0; i < bytesRead; i++)
+                    if (bytesRead > 0)
                     {
-                        buffer.Add(readBuffer[i]);
+                        dataReceived = true;
+                        Log($"Read {bytesRead} bytes from client");
+                        
+                        for (int i = 0; i < bytesRead; i++)
+                        {
+                            buffer.Add(readBuffer[i]);
+                        }
+                        
+                        // Continue reading if more data available
+                        while (stream.DataAvailable && client.Connected)
+                        {
+                            bytesRead = await stream.ReadAsync(readBuffer, 0, readBuffer.Length);
+                            if (bytesRead > 0)
+                            {
+                                Log($"Read additional {bytesRead} bytes from client");
+                                for (int i = 0; i < bytesRead; i++)
+                                {
+                                    buffer.Add(readBuffer[i]);
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        
+                        Log($"Total bytes read: {buffer.Count}");
                     }
-                    
-                    // Check if we have complete JSON (simple check - no more data available)
-                    if (!stream.DataAvailable)
+                    else
                     {
-                        // Small delay to ensure all data is received
-                        await Task.Delay(50);
-                        if (!stream.DataAvailable) break;
+                        Log("Read returned 0 bytes (connection closed)");
                     }
+                }
+                catch (System.IO.IOException ioEx)
+                {
+                    // Timeout or connection closed
+                    Log($"Read IOException: {ioEx.Message}");
+                    if (!dataReceived)
+                    {
+                        Log("Connection closed or timeout before receiving any data");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error reading data: {ex.Message}");
+                    Log($"Stack trace: {ex.StackTrace}");
                 }
 
                 if (buffer.Count > 0)
                 {
                     var json = Encoding.UTF8.GetString(buffer.ToArray());
-                    System.Diagnostics.Debug.WriteLine($"Received JSON ({buffer.Count} bytes): {json.Substring(0, Math.Min(500, json.Length))}...");
+                    Log($"Received JSON ({buffer.Count} bytes): {json.Substring(0, Math.Min(500, json.Length))}...");
                     
                     var command = ParseAndProcessCommand(json);
                     
@@ -227,35 +295,44 @@ namespace RengaPlugin
                     var responseJson = JsonConvert.SerializeObject(response);
                     var responseData = Encoding.UTF8.GetBytes(responseJson);
                     
-                    System.Diagnostics.Debug.WriteLine($"Sending response ({responseData.Length} bytes): {responseJson.Substring(0, Math.Min(500, responseJson.Length))}...");
+                    Log($"Sending response ({responseData.Length} bytes): {responseJson.Substring(0, Math.Min(500, responseJson.Length))}...");
                     
                     await stream.WriteAsync(responseData, 0, responseData.Length);
                     await stream.FlushAsync();
                     
-                    System.Diagnostics.Debug.WriteLine("Response sent successfully");
+                    Log("Response sent successfully");
                     
-                    // Wait a bit to ensure response is fully sent before closing
-                    await Task.Delay(100);
+                    // Wait to ensure response is fully sent before closing
+                    await Task.Delay(200);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("No data received from client");
+                    Log("No data received from client");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error handling client: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Log($"Error handling client: {ex.Message}");
+                Log($"Stack trace: {ex.StackTrace}");
             }
             finally
             {
                 try
                 {
-                    // Give time for response to be fully sent
-                    await Task.Delay(50);
+                    // Ensure all data is flushed before closing
+                    if (client.Connected)
+                    {
+                        var stream = client.GetStream();
+                        stream?.Flush();
+                        await Task.Delay(100); // Give time for flush to complete
+                    }
                     client.Close();
+                    Log("Client connection closed");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Log($"Error closing client: {ex.Message}");
+                }
             }
         }
 
