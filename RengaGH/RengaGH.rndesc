@@ -1,0 +1,10 @@
+<RengaPlugin>
+	<Name>RengaGH Integration</Name>
+	<Version>1.0</Version>
+	<RequiredAPIVersion>2.41</RequiredAPIVersion>
+	<Vendor>Renga Software LLC</Vendor>
+	<Copyright>Copyright Renga Software LLC, 2025. All rights reserved.</Copyright>
+	<PluginFilename>RengaGH.dll</PluginFilename>
+	<PluginType>Net8</PluginType>
+</RengaPlugin>
+
