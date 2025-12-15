@@ -138,10 +138,10 @@ namespace GrasshopperRNG.Components
                 }
             }
 
-            if (client == null)
+            if (client == null || !client.IsConnected)
             {
                 DA.SetData(0, false);
-                DA.SetData(1, "Renga Connect component not provided. Connect to Renga first.");
+                DA.SetData(1, "Renga Connect is not connected. Connect to Renga first.");
                 DA.SetDataList(2, new List<int>());
                 DA.SetDataList(3, new List<string>());
                 DA.SetDataList(4, new List<IGH_GeometricGoo>());
@@ -157,22 +157,9 @@ namespace GrasshopperRNG.Components
                 timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
             };
 
-            // Send command to server (Send() will create a new connection if needed)
+            // Send command to server
             var json = JsonConvert.SerializeObject(command);
             var responseJson = client.Send(json);
-            
-            // Check if Send() failed to connect
-            if (string.IsNullOrEmpty(responseJson))
-            {
-                DA.SetData(0, false);
-                DA.SetData(1, "Failed to connect to Renga. Make sure Renga plugin is running and connected.");
-                DA.SetDataList(2, new List<int>());
-                DA.SetDataList(3, new List<string>());
-                DA.SetDataList(4, new List<IGH_GeometricGoo>());
-                DA.SetDataList(5, new List<IGH_GeometricGoo>());
-                DA.SetDataList(6, new List<double>());
-                return;
-            }
             
             var wallIds = new List<int>();
             var wallNames = new List<string>();
@@ -221,15 +208,13 @@ namespace GrasshopperRNG.Components
                                 if (baselineObj == null)
                                 {
                                     System.Diagnostics.Debug.WriteLine($"Warning: baseline is null for wall {id}");
-                                    baselineGeo = null;
+                                    baselines.Add(null);
+                                    continue;
                                 }
-                                else
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"Processing baseline for wall {id}");
-                                    var startPoint = baselineObj["startPoint"] as JObject;
-                                    var endPoint = baselineObj["endPoint"] as JObject;
-                                    var baselineType = baselineObj["type"]?.ToString() ?? "LineSegment";
-                                    System.Diagnostics.Debug.WriteLine($"  Baseline type: {baselineType}, startPoint: {startPoint != null}, endPoint: {endPoint != null}");
+                                
+                                var startPoint = baselineObj["startPoint"] as JObject;
+                                var endPoint = baselineObj["endPoint"] as JObject;
+                                var baselineType = baselineObj["type"]?.ToString() ?? "LineSegment";
 
                                 double startX = 0, startY = 0, startZ = 0;
                                 double endX = 0, endY = 0, endZ = 0;
@@ -247,7 +232,6 @@ namespace GrasshopperRNG.Components
                                     var sampledPoints = baselineObj["sampledPoints"] as JArray;
                                     if (sampledPoints != null && sampledPoints.Count > 1)
                                     {
-                                        System.Diagnostics.Debug.WriteLine($"  Using {sampledPoints.Count} sampled points for baseline");
                                         // Use sampled points to create a polyline curve
                                         var polyline = new Polyline();
                                         foreach (var pt in sampledPoints)
@@ -258,7 +242,6 @@ namespace GrasshopperRNG.Components
                                             polyline.Add(px, py, pz);
                                         }
                                         baselineGeo = new GH_Curve(new PolylineCurve(polyline));
-                                        System.Diagnostics.Debug.WriteLine($"  Created polyline curve with {polyline.Count} points");
                                     }
                                     // If no sampled points, try to reconstruct based on type
                                     else if (baselineType == "Arc")
@@ -406,22 +389,18 @@ namespace GrasshopperRNG.Components
                                         baselineGeo = new GH_Line(line);
                                     }
                                 }
-                                    else
-                                    {
-                                        // If startPoint or endPoint is null, create a null baseline
-                                        System.Diagnostics.Debug.WriteLine($"Warning: startPoint or endPoint is null for wall {id}");
-                                        baselineGeo = null;
-                                    }
+                                else
+                                {
+                                    // If startPoint or endPoint is null, create a null baseline
+                                    System.Diagnostics.Debug.WriteLine($"Warning: startPoint or endPoint is null for wall {id}");
+                                    baselineGeo = null;
                                 }
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"Error parsing baseline for wall {id}: {ex.Message}");
-                                System.Diagnostics.Debug.WriteLine($"  Stack trace: {ex.StackTrace}");
-                                baselineGeo = null;
+                                System.Diagnostics.Debug.WriteLine($"Error parsing baseline: {ex.Message}");
                             }
                             // Always add something, even if null (Grasshopper will handle it)
-                            System.Diagnostics.Debug.WriteLine($"  Final baselineGeo for wall {id}: {(baselineGeo != null ? baselineGeo.GetType().Name : "null")}");
                             baselines.Add(baselineGeo);
 
                             // Extract mesh
