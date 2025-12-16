@@ -239,6 +239,7 @@ namespace RengaPlugin
                 var x = pointObj["x"]?.Value<double>() ?? 0;
                 var y = pointObj["y"]?.Value<double>() ?? 0;
                 var z = pointObj["z"]?.Value<double>() ?? 0;
+                var height = pointObj["height"]?.Value<double>() ?? 3000.0; // Default 3000mm
                 var grasshopperGuid = pointObj["grasshopperGuid"]?.ToString();
                 var rengaColumnGuid = pointObj["rengaColumnGuid"]?.ToString();
 
@@ -284,13 +285,13 @@ namespace RengaPlugin
 
                 if (columnExists)
                 {
-                    // Update column position
-                    return UpdateColumn(columnId, x, y, z, grasshopperGuid);
+                    // Update column position and height
+                    return UpdateColumn(columnId, x, y, z, height, grasshopperGuid);
                 }
                 else
                 {
                     // Create new column
-                    return CreateColumn(x, y, z, grasshopperGuid);
+                    return CreateColumn(x, y, z, height, grasshopperGuid);
                 }
             }
             catch (Exception ex)
@@ -299,7 +300,7 @@ namespace RengaPlugin
             }
         }
 
-        private PointResult CreateColumn(double x, double y, double z, string grasshopperGuid)
+        private PointResult CreateColumn(double x, double y, double z, double height, string grasshopperGuid)
         {
             try
             {
@@ -344,6 +345,40 @@ namespace RengaPlugin
                     newPlacement.Move(moveVector);
                     column.SetPlacement(newPlacement);
                 }
+
+                // Set column height using IParameterContainer
+                try
+                {
+                    var modelObject = column as Renga.IModelObject;
+                    if (modelObject != null)
+                    {
+                        var parameters = modelObject.GetParameters();
+                        if (parameters != null)
+                        {
+                            // Try ColumnHeight parameter ID
+                            try
+                            {
+                                var heightParameter = parameters.Get(Renga.ParameterIds.ColumnHeight);
+                                if (heightParameter != null)
+                                {
+                                    heightParameter.SetDoubleValue(height);
+                                    System.Diagnostics.Debug.WriteLine($"Column height set to {height}mm for GUID: {grasshopperGuid}");
+                                }
+                            }
+                            catch
+                            {
+                                // ColumnHeight parameter might not exist, try alternative approach
+                                System.Diagnostics.Debug.WriteLine($"ParameterIds.ColumnHeight not found, trying alternative method");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't fail column creation
+                    System.Diagnostics.Debug.WriteLine($"Error setting column height: {ex.Message}");
+                }
+
                 op.Apply();
 
                 // Store mapping - get ID from column object (cast to IModelObject)
@@ -365,7 +400,7 @@ namespace RengaPlugin
             }
         }
 
-        private PointResult UpdateColumn(int columnId, double x, double y, double z, string grasshopperGuid)
+        private PointResult UpdateColumn(int columnId, double x, double y, double z, double height, string grasshopperGuid)
         {
             try
             {
@@ -398,6 +433,39 @@ namespace RengaPlugin
                     };
                     newPlacement.Move(moveVector);
                     column.SetPlacement(newPlacement);
+                }
+
+                // Update column height using IParameterContainer
+                try
+                {
+                    var modelObject = column as Renga.IModelObject;
+                    if (modelObject != null)
+                    {
+                        var parameters = modelObject.GetParameters();
+                        if (parameters != null)
+                        {
+                            // Try ColumnHeight parameter ID
+                            try
+                            {
+                                var heightParameter = parameters.Get(Renga.ParameterIds.ColumnHeight);
+                                if (heightParameter != null)
+                                {
+                                    heightParameter.SetDoubleValue(height);
+                                    System.Diagnostics.Debug.WriteLine($"Column height updated to {height}mm for column ID: {columnId}");
+                                }
+                            }
+                            catch
+                            {
+                                // ColumnHeight parameter might not exist
+                                System.Diagnostics.Debug.WriteLine($"ParameterIds.ColumnHeight not found for column ID: {columnId}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't fail column update
+                    System.Diagnostics.Debug.WriteLine($"Error updating column height: {ex.Message}");
                 }
                 
                 op.Apply();
