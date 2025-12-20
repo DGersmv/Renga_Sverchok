@@ -12,17 +12,19 @@
 
 ```
 Renga_Sverchok/
-├── RengaGH/              # Плагин для Renga (TCP сервер)
+├── RengaGH/              # Плагин для Renga (TCP сервер, C#)
 │   ├── RengaPlugin.cs
 │   ├── RengaGH.csproj
 │   └── RengaGH.rndesc
-└── nodes/renga/          # Ноды для Sverchok (Python)
-    ├── renga_connect.py
-    ├── renga_create_columns.py
-    ├── renga_get_walls.py
-    ├── renga_client.py
-    ├── connection_protocol.py
-    └── commands.py
+├── sverchok_nodes/       # Ноды для Sverchok (Python)
+│   ├── renga_connect.py
+│   ├── renga_create_columns.py
+│   ├── renga_get_walls.py
+│   ├── renga_client.py
+│   ├── connection_protocol.py
+│   └── commands.py
+├── Renga_Sverchok.sln    # Решение Visual Studio
+└── build_solution.bat    # Скрипт для сборки
 ```
 
 ## Требования
@@ -37,19 +39,20 @@ Renga_Sverchok/
 
 ### Плагин Renga
 
-1. Откройте `Renga_Grasshopper.sln` в Visual Studio
-2. Соберите решение (Build Solution)
+1. Откройте `Renga_Sverchok.sln` в Visual Studio
+2. Соберите решение (Build Solution) или запустите `build_solution.bat`
 3. После сборки скопируйте `RengaGH.dll` и `RengaGH.rndesc` из `bin\Release\RengaGH\` в папку плагинов Renga
 4. Перезапустите Renga
 
 ### Ноды Sverchok
 
-Ноды Sverchok уже находятся в папке:
-```
-C:\Program Files\Renga Standard\RengaSDK\Sverchok\nodes\renga\
-```
+1. Скопируйте папку `sverchok_nodes` в директорию аддона Sverchok:
+   ```
+   [Blender Install Path]\3.x\scripts\addons\sverchok-master\nodes\renga\
+   ```
+   Или переименуйте `sverchok_nodes` в `renga` и скопируйте в `nodes\` директорию Sverchok.
 
-Они автоматически обнаружатся Sverchok при перезапуске Blender.
+2. Перезапустите Blender - ноды автоматически появятся в категории "Renga" в меню добавления нод Sverchok.
 
 ## Использование
 
