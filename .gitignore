@@ -30,7 +30,7 @@ bld/
 *.pdb
 *.exe
 *.gha
-*.rndesc
+# Note: *.rndesc files are needed for Renga plugins, so they are NOT ignored
 
 # NuGet Packages
 *.nupkg
