@@ -1,11 +1,12 @@
 """
 Скрипт для автоматического добавления категории "Renga" в меню Sverchok
 Скопируйте этот скрипт в Blender Text Editor и запустите (Run Script)
+РАБОТАЕТ БЕЗ YAML - использует простую обработку текста
 """
 
 import bpy
 import os
-import yaml
+import re
 
 # Путь к меню Sverchok
 blender_version = bpy.app.version_string.split('.')[0]
@@ -15,23 +16,21 @@ menus_path = os.path.join(
     blender_version, "scripts", "addons", "sverchok-master", "menus"
 )
 
-# Категория для добавления
-renga_category = {
-    'icon_name': 'PLUGIN',
-    'extra_menu': 'ConnectionPartialMenu',
-    'nodes': [
-        'SvRengaConnectNode',
-        'SvRengaCreateColumnsNode',
-        'SvRengaGetWallsNode'
-    ]
-}
-
 # Файлы для изменения
 menu_files = [
     'index.yaml',
     'full_by_data_type.yaml',
     'full_by_operations.yaml'
 ]
+
+# Текст для добавления категории Renga
+renga_category_text = """- Renga:
+    icon_name: PLUGIN
+    extra_menu: ConnectionPartialMenu
+    - SvRengaConnectNode
+    - SvRengaCreateColumnsNode
+    - SvRengaGetWallsNode
+"""
 
 print("=" * 70)
 print("ДОБАВЛЕНИЕ КАТЕГОРИИ 'Renga' В МЕНЮ SVERCHOK")
@@ -58,58 +57,47 @@ else:
             continue
         
         try:
-            # Читаем YAML файл
+            # Читаем файл
             with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
+                lines = f.readlines()
             
             # Проверяем, есть ли уже категория Renga
+            content = ''.join(lines)
             if 'Renga:' in content or '- Renga:' in content:
                 print(f"✓ Категория 'Renga' уже есть в {menu_file}")
                 continue
             
-            # Парсим YAML
-            try:
-                data = yaml.safe_load(content)
-                if data is None:
-                    data = []
-            except:
-                print(f"⚠ Не удалось распарсить {menu_file}, пропускаем")
-                continue
+            # Ищем место для вставки (после "Pulga Physics" или перед "Text", или в конец)
+            insert_index = len(lines)
+            renga_inserted = False
             
-            # Проверяем, что data - это список
-            if not isinstance(data, list):
-                print(f"⚠ Неверный формат {menu_file}, пропускаем")
-                continue
+            # Ищем паттерны для вставки
+            for i, line in enumerate(lines):
+                # Ищем категории, которые идут после Renga по алфавиту
+                if re.match(r'^- (Text|Transform|Vector|Viewer|Voronoi|Wave|Weave|Wrangle|Xsection):', line, re.IGNORECASE):
+                    insert_index = i
+                    renga_inserted = True
+                    break
+                # Ищем "Pulga Physics" - вставим после неё
+                elif re.match(r'^- Pulga Physics:', line, re.IGNORECASE):
+                    # Находим конец этой категории
+                    j = i + 1
+                    while j < len(lines) and (lines[j].startswith(' ') or lines[j].strip() == ''):
+                        j += 1
+                    insert_index = j
+                    renga_inserted = True
+                    break
             
-            # Ищем, где добавить категорию (по алфавиту)
-            insert_index = len(data)
-            for i, item in enumerate(data):
-                if isinstance(item, dict):
-                    for key in item.keys():
-                        if key.lower() > 'renga':
-                            insert_index = i
-                            break
-                    if insert_index < len(data):
-                        break
+            # Если не нашли место, вставляем в конец
+            if not renga_inserted:
+                insert_index = len(lines)
             
-            # Добавляем категорию
-            renga_entry = {
-                'Renga': {
-                    'icon_name': 'PLUGIN',
-                    'extra_menu': 'ConnectionPartialMenu',
-                    'nodes': [
-                        'SvRengaConnectNode',
-                        'SvRengaCreateColumnsNode',
-                        'SvRengaGetWallsNode'
-                    ]
-                }
-            }
+            # Вставляем категорию
+            lines.insert(insert_index, renga_category_text)
             
-            data.insert(insert_index, renga_entry)
-            
-            # Сохраняем обратно
+            # Сохраняем файл
             with open(file_path, 'w', encoding='utf-8') as f:
-                yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+                f.writelines(lines)
             
             print(f"✓ Категория 'Renga' добавлена в {menu_file}")
             
