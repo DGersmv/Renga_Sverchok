@@ -46,11 +46,24 @@ Renga_Sverchok/
 
 ### Ноды Sverchok
 
-1. Скопируйте папку `sverchok_nodes` в директорию аддона Sverchok:
+**⚠️ ВАЖНО**: Папка ДОЛЖНА называться `renga`, а НЕ `sverchok_nodes`!
+
+1. Скопируйте папку `sverchok_nodes` из проекта
+2. **ПЕРЕИМЕНОВАТЬ её в `renga`** (обязательно!)
+3. Скопируйте переименованную папку `renga` в:
    ```
    [Blender Install Path]\5.0\scripts\addons\sverchok-master\nodes\renga\
    ```
-   Или переименуйте `sverchok_nodes` в `renga` и скопируйте в `nodes\` директорию Sverchok.
+   
+   **Итоговая структура:**
+   ```
+   sverchok-master/
+     nodes/
+       renga/              ← ВОТ ТАК, а НЕ sverchok_nodes!
+         __init__.py
+         renga_connect.py
+         ...
+   ```
 
 2. **Важно**: Для появления нод в категории "Renga" в меню Sverchok необходимо добавить запись в файлы меню. Подробные инструкции см. в `sverchok_nodes/MENU_REGISTRATION.md`
 
