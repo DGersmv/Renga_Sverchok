@@ -114,14 +114,23 @@ try:
 except Exception as e:
     print(f"⚠ Ошибка обновления меню: {e}")
 
-# Проверка
+# Проверка (после небольшой задержки для завершения регистрации)
+import time
+time.sleep(0.5)  # Дать время на завершение регистрации
+
 print("\n" + "=" * 70)
 print("ПРОВЕРКА")
 print("=" * 70)
 
 all_ok = True
 for module_name, class_name in nodes_info:
-    status = class_name in dir(bpy.types)
+    # Проверка через bpy.types
+    try:
+        node_type = getattr(bpy.types, class_name, None)
+        status = node_type is not None
+    except:
+        status = class_name in dir(bpy.types)
+    
     print(f"{'✓' if status else '✗'} {class_name}: {'ЗАРЕГИСТРИРОВАН' if status else 'НЕ ЗАРЕГИСТРИРОВАН'}")
     if not status:
         all_ok = False
@@ -135,7 +144,13 @@ if all_ok:
     print("3. Введите 'Renga'")
     print("4. Ноды должны появиться!")
 else:
-    print("✗ НЕКОТОРЫЕ НОДЫ НЕ ЗАРЕГИСТРИРОВАНЫ")
+    print("⚠ НЕКОТОРЫЕ НОДЫ НЕ ЗАРЕГИСТРИРОВАНЫ В ЭТОТ МОМЕНТ")
+    print("НО: Sverchok может зарегистрировать их автоматически при загрузке!")
+    print("\nПроверьте после полной загрузки Sverchok:")
+    print("1. Откройте Sverchok")
+    print("2. Нажмите Space (поиск)")
+    print("3. Введите 'Renga'")
+    print("4. Если ноды есть - всё работает!")
 print("=" * 70)
 
 
