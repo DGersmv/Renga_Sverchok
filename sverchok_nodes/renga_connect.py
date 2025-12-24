@@ -59,7 +59,6 @@ class SvRengaConnectNode(SverchCustomTreeNode, bpy.types.Node):
     bl_idname = 'SvRengaConnectNode'
     bl_label = 'Renga Connect'
     bl_icon = 'NETWORK_DRIVE'
-    sv_category = "Renga"
     sv_icon = 'NETWORK_DRIVE'
     
     port: IntProperty(

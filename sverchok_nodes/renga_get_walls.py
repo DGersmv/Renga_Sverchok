@@ -81,7 +81,6 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
     bl_idname = 'SvRengaGetWallsNode'
     bl_label = 'Renga Get Walls'
     bl_icon = 'MESH_CUBE'
-    sv_category = "Renga"
     sv_icon = 'MESH_CUBE'
     
     update_trigger: BoolProperty(
