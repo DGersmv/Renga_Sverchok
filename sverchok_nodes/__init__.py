@@ -21,5 +21,7 @@ Renga integration nodes for Sverchok
 Nodes are registered automatically by Sverchok's node system
 """
 
-# Renga integration nodes for Sverchok
-# Nodes are registered automatically by Sverchok's node system
+# Импортируем ноды для автоматической регистрации Sverchok
+from . import renga_connect
+from . import renga_create_columns
+from . import renga_get_walls
