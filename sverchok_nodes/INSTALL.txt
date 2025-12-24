@@ -1,0 +1,31 @@
+═══════════════════════════════════════════════════════════════
+  УСТАНОВКА НОД RENGA ДЛЯ SVERCHOK
+═══════════════════════════════════════════════════════════════
+
+ИСХОДНЫЕ ФАЙЛЫ:
+  C:\Program Files\Renga Standard\RengaSDK\Samples\C#\Renga_Sverchok\sverchok_nodes\
+
+УСТАНОВКА НА ЛЮБОЙ КОМПЬЮТЕР:
+
+1. Найдите папку Sverchok:
+   %APPDATA%\Blender Foundation\Blender\[Версия]\scripts\addons\sverchok-master\nodes\
+
+2. Скопируйте папку sverchok_nodes и переименуйте в "renga"
+
+3. Вставьте в папку nodes\ Sverchok
+
+4. Удалите __pycache__ в папке renga (если есть)
+
+5. Перезапустите Blender полностью
+
+6. Проверьте регистрацию (Text Editor > Run Script):
+   import bpy
+   print('SvRengaConnectNode' in dir(bpy.types))
+   print('SvRengaCreateColumnsNode' in dir(bpy.types))
+   print('SvRengaGetWallsNode' in dir(bpy.types))
+
+7. Если все True - ноды зарегистрированы!
+   Ищите их через поиск в Sverchok: Space -> "Renga"
+
+═══════════════════════════════════════════════════════════════
+
