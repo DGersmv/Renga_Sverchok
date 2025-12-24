@@ -25,10 +25,10 @@ menu_files = [
     'full_by_operations.yaml'
 ]
 
-# Текст для добавления категории Renga
+# Текст для добавления категории Renga (формат как у Network)
 renga_category_text = """- Renga:
-    icon_name: PLUGIN
-    extra_menu: ConnectionPartialMenu
+    - icon_name: PLUGIN
+    - extra_menu: ConnectionPartialMenu
     - SvRengaConnectNode
     - SvRengaCreateColumnsNode
     - SvRengaGetWallsNode
