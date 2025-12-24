@@ -27,10 +27,17 @@ from bpy.props import BoolProperty
 from mathutils import Vector
 from sverchok.node_tree import SverchCustomTreeNode
 from sverchok.data_structure import updateNode
-from sverchok.utils.curve.primitives import SvLine
-from sverchok.utils.curve.splines import SvSplineCurve
-from sverchok.utils.curve.algorithms import concatenate_curves
 from . import commands
+
+# Try to import curve utilities (may not be available in all Sverchok versions)
+try:
+    from sverchok.utils.curve.primitives import SvLine
+    from sverchok.utils.curve.splines import SvSplineCurve
+    from sverchok.utils.curve.algorithms import concatenate_curves
+    CURVE_UTILS_AVAILABLE = True
+except ImportError:
+    CURVE_UTILS_AVAILABLE = False
+    print("Renga Get Walls: Curve utilities not available, baseline curves will be limited")
 
 
 class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
@@ -205,7 +212,7 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
     def _parse_baseline(self, baseline_obj):
         """
         Parse baseline curve from JSON object
-        Returns Sverchok curve object (SvLine or SvSplineCurve)
+        Returns Sverchok curve object (SvLine or SvSplineCurve) or list of points
         Similar to RengaGetWallsComponent.ParseBaseline in C#
         """
         try:
@@ -227,13 +234,22 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
                     points.append([x, y, z])
                 
                 if len(points) >= 2:
-                    # Create spline curve from sampled points (polyline-like)
-                    if len(points) == 2:
-                        # Simple line for 2 points
-                        return SvLine.from_two_points(points[0], points[1])
+                    # Try to create Sverchok curve if utilities are available
+                    if CURVE_UTILS_AVAILABLE:
+                        try:
+                            if len(points) == 2:
+                                # Simple line for 2 points
+                                return SvLine.from_two_points(points[0], points[1])
+                            else:
+                                # Spline curve for multiple points
+                                return SvSplineCurve.from_points(points, is_cyclic=False)
+                        except Exception as e:
+                            print(f"Renga Get Walls: Error creating curve, using point list: {e}")
+                            # Fallback to point list
+                            return points
                     else:
-                        # Spline curve for multiple points
-                        return SvSplineCurve.from_points(points, is_cyclic=False)
+                        # Return as list of points if curve utils not available
+                        return points
             
             # Fallback: simple line (start and end points)
             start_x = start_point_obj.get('x', 0)
@@ -246,8 +262,17 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
             start_pt = [start_x, start_y, start_z]
             end_pt = [end_x, end_y, end_z]
             
-            # Create line from start to end
-            return SvLine.from_two_points(start_pt, end_pt)
+            # Try to create Sverchok curve if utilities are available
+            if CURVE_UTILS_AVAILABLE:
+                try:
+                    return SvLine.from_two_points(start_pt, end_pt)
+                except Exception as e:
+                    print(f"Renga Get Walls: Error creating line, using point list: {e}")
+                    # Fallback to point list
+                    return [start_pt, end_pt]
+            else:
+                # Return as list of points if curve utils not available
+                return [start_pt, end_pt]
         
         except Exception as e:
             print(f"Error parsing baseline: {str(e)}")
