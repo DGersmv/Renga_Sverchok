@@ -102,7 +102,7 @@ try:
             except:
                 pass
     
-    print(f"Всего нод Sverchok найдено: {len(all_sverok_nodes)}")
+    print(f"Всего нод Sverchok найдено: {len(all_sverchok_nodes)}")
     
     renga_found = []
     for class_name in node_classes.keys():
