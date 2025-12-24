@@ -25,9 +25,14 @@ import os
 import re
 
 # Импортируем ноды для автоматической регистрации Sverchok
-from . import renga_connect
-from . import renga_create_columns
-from . import renga_get_walls
+# Импорт должен быть ДО вызова функции добавления в меню
+try:
+    from . import renga_connect
+    from . import renga_create_columns
+    from . import renga_get_walls
+except ImportError as e:
+    # Если импорт не удался - пропускаем, но не падаем
+    print(f"Renga nodes: Import error (may be normal during Sverchok loading): {e}")
 
 
 def _add_category_to_menu():
@@ -128,4 +133,12 @@ def _add_category_to_menu():
 
 
 # Автоматически добавляем категорию в меню при импорте
-_add_category_to_menu()
+# Вызываем только если bpy доступен (не во время начальной загрузки)
+try:
+    import bpy
+    # Проверяем, что bpy полностью загружен
+    if hasattr(bpy, 'app') and hasattr(bpy.app, 'version_string'):
+        _add_category_to_menu()
+except:
+    # bpy ещё не готов - это нормально, функция вызовется позже
+    pass
