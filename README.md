@@ -46,30 +46,33 @@ Renga_Sverchok/
 
 ### Ноды Sverchok
 
-**⚠️ ВАЖНО**: Папка ДОЛЖНА называться `renga`, а НЕ `sverchok_nodes`!
+#### Автоматическая установка (рекомендуется)
+
+**Просто запустите скрипт установки:**
+
+1. **Windows**: Двойной клик на `install.bat`
+2. **Или в Blender**: Text Editor → скопируйте `install_renga_nodes.py` → Run Script
+3. Перезапустите Blender полностью
+4. Готово! Ноды появятся в категории "Renga" в меню Sverchok
+
+Скрипт автоматически:
+- ✅ Найдет папку Sverchok
+- ✅ Скопирует все файлы в правильное место
+- ✅ Добавит категорию "Renga" в меню
+- ✅ Удалит старый кэш
+
+#### Ручная установка (если автоматическая не работает)
 
 1. Скопируйте папку `sverchok_nodes` из проекта
 2. **ПЕРЕИМЕНОВАТЬ её в `renga`** (обязательно!)
 3. Скопируйте переименованную папку `renga` в:
    ```
-   [Blender Install Path]\5.0\scripts\addons\sverchok-master\nodes\renga\
+   %APPDATA%\Blender Foundation\Blender\5.0\scripts\addons\sverchok-master\nodes\renga\
    ```
-   
-   **Итоговая структура:**
-   ```
-   sverchok-master/
-     nodes/
-       renga/              ← ВОТ ТАК, а НЕ sverchok_nodes!
-         __init__.py
-         renga_connect.py
-         ...
-   ```
+4. Добавьте категорию в меню (см. `sverchok_nodes/MENU_REGISTRATION.md` или используйте `sverchok_nodes/ADD_TO_MENU.py`)
+5. Перезапустите Blender
 
-2. **Важно**: Для появления нод в категории "Renga" в меню Sverchok необходимо добавить запись в файлы меню. Подробные инструкции см. в `sverchok_nodes/MENU_REGISTRATION.md`
-
-3. Перезапустите Blender - ноды должны появиться в категории "Renga" в меню добавления нод Sverchok.
-
-**Примечание**: Если ноды не видны в меню, но зарегистрированы (проверьте через `dir(bpy.types)`), используйте поиск (Space) в Sverchok для доступа к нодам.
+**Подробные инструкции**: см. `INSTALL.md`
 
 ## Использование
 
