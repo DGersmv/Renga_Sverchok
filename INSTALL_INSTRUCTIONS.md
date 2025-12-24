@@ -148,3 +148,4 @@ for filename, class_name, module_path in nodes_info:
 
 Если ноды не видны в меню, но зарегистрированы - используйте поиск (Space) в Sverchok.
 
+
