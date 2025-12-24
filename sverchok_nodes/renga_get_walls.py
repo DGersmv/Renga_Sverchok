@@ -27,7 +27,40 @@ from bpy.props import BoolProperty
 from mathutils import Vector
 from sverchok.node_tree import SverchCustomTreeNode
 from sverchok.data_structure import updateNode
-from . import commands
+import os
+import sys
+import uuid
+from datetime import datetime
+
+# Добавить путь к папке для импорта модулей
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+
+# Импорт модулей
+try:
+    import renga_client
+except ImportError:
+    try:
+        import importlib.util
+        client_file = os.path.join(_current_dir, "renga_client.py")
+        if os.path.exists(client_file):
+            spec = importlib.util.spec_from_file_location("renga_client", client_file)
+            renga_client = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(renga_client)
+        else:
+            renga_client = None
+    except:
+        renga_client = None
+
+# Встроенная функция create_get_walls_message (чтобы не зависеть от commands)
+def create_get_walls_message():
+    return {
+        "id": str(uuid.uuid4()),
+        "command": "get_walls",
+        "data": {},
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    }
 
 # Try to import curve utilities (may not be available in all Sverchok versions)
 try:
@@ -97,7 +130,14 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
                         port = connected_node.port
             
             # Create client with port from Connect node or default
-            from . import renga_client
+            if renga_client is None:
+                self.outputs['Success'].sv_set([[False]])
+                self.outputs['Message'].sv_set([["Renga client module not available"]])
+                self.outputs['Baselines'].sv_set([[]])
+                self.outputs['Vertices'].sv_set([[]])
+                self.outputs['Faces'].sv_set([[]])
+                return
+            
             client = renga_client.RengaConnectionClient(port=port)
             
             if not client.is_server_reachable():
@@ -118,7 +158,7 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
                 return
             
             # Prepare command
-            message = commands.create_get_walls_message()
+            message = create_get_walls_message()
             
             # Send command to server
             try:
