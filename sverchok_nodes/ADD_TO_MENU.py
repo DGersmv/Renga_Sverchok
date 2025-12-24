@@ -9,7 +9,9 @@ import os
 import re
 
 # Путь к меню Sverchok
-blender_version = bpy.app.version_string.split('.')[0]
+# Исправляем версию: "5.0.1" -> "5.0" (не просто "5")
+blender_version_full = bpy.app.version_string
+blender_version = '.'.join(blender_version_full.split('.')[:2])  # "5.0.1" -> "5.0"
 menus_path = os.path.join(
     os.path.expanduser("~"),
     "AppData", "Roaming", "Blender Foundation", "Blender",
@@ -39,17 +41,50 @@ print(f"Путь к меню: {menus_path}")
 
 if not os.path.exists(menus_path):
     print(f"✗ Папка меню не найдена: {menus_path}")
-    print("Укажите путь вручную в скрипте")
-    menus_path = r"C:\Users\DGer\AppData\Roaming\Blender Foundation\Blender\5.0\scripts\addons\sverchok-master\menus"
+    print("Пробуем альтернативные пути...")
+    # Пробуем разные версии
+    for ver in ["5.0", "5", "4.0", "4"]:
+        alt_path = os.path.join(
+            os.path.expanduser("~"),
+            "AppData", "Roaming", "Blender Foundation", "Blender",
+            ver, "scripts", "addons", "sverchok-master", "menus"
+        )
+        if os.path.exists(alt_path):
+            menus_path = alt_path
+            print(f"✓ Найдена папка меню: {menus_path}")
+            break
+    else:
+        # Последняя попытка - прямой путь
+        menus_path = r"C:\Users\DGer\AppData\Roaming\Blender Foundation\Blender\5.0\scripts\addons\sverchok-master\menus"
+        if not os.path.exists(menus_path):
+            print(f"✗ Папка меню не найдена!")
+            print("Проверьте путь к Sverchok")
+            menus_path = None
 
-if not os.path.exists(menus_path):
-    print(f"✗ Папка меню не найдена!")
-    print("Проверьте путь к Sverchok")
-else:
+if menus_path and os.path.exists(menus_path):
     print(f"✓ Папка меню найдена: {menus_path}")
     
-    # Обработка каждого файла меню
+    # Проверяем, какие файлы реально есть
+    existing_files = []
     for menu_file in menu_files:
+        file_path = os.path.join(menus_path, menu_file)
+        if os.path.exists(file_path):
+            existing_files.append(menu_file)
+        else:
+            # Пробуем альтернативные имена
+            for alt_file in alternative_files:
+                alt_path = os.path.join(menus_path, alt_file)
+                if os.path.exists(alt_path):
+                    existing_files.append(alt_file)
+                    break
+    
+    if not existing_files:
+        print(f"⚠ Файлы меню не найдены в {menus_path}")
+        print("Проверьте установку Sverchok")
+    else:
+        print(f"✓ Найдено файлов меню: {len(existing_files)}")
+        # Обрабатываем только существующие файлы
+        for menu_file in existing_files:
         file_path = os.path.join(menus_path, menu_file)
         
         if not os.path.exists(file_path):
