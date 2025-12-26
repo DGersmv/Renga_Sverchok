@@ -119,7 +119,7 @@ class SvRengaCreateColumnsNode(SverchCustomTreeNode, bpy.types.Node):
     bl_idname = 'SvRengaCreateColumnsNode'
     bl_label = 'Renga Create Columns'
     bl_icon = 'MESH_CYLINDER'
-    sv_icon = 'MESH_CYLINDER'
+    sv_category = "Renga"
     
     update_trigger: BoolProperty(
         name='Update',

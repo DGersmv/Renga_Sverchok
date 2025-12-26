@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel.Attributes;
 
-namespace SverchokRenga.Components
+namespace GrasshopperRNG.Components
 {
     /// <summary>
     /// Custom attributes for RengaConnectComponent with Update button

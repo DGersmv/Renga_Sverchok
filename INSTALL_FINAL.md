@@ -74,3 +74,4 @@ print("SvRengaGetWallsNode:", 'SvRengaGetWallsNode' in dir(bpy.types))
 Если все три пункта выполнены - ноды работают, проблема только в меню Sverchok.
 
 
+

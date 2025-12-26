@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SverchokRenga.Connection
+namespace GrasshopperRNG.Connection
 {
     /// <summary>
     /// Protocol for reliable TCP communication with length-prefixed messages

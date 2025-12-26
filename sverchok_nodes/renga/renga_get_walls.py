@@ -281,12 +281,25 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
                                 # Simple line for 2 points
                                 return SvLine.from_two_points(points[0], points[1])
                             else:
-                                # Spline curve for multiple points
-                                return SvSplineCurve.from_points(points, is_cyclic=False)
+                                # For multiple points, create polyline by concatenating lines
+                                # This avoids the CubicSpline error and matches Grasshopper PolylineCurve behavior
+                                lines = []
+                                for i in range(len(points) - 1):
+                                    line = SvLine.from_two_points(points[i], points[i + 1])
+                                    lines.append(line)
+                                if lines:
+                                    return concatenate_curves(lines)
+                                else:
+                                    return SvLine.from_two_points(points[0], points[-1])
                         except Exception as e:
-                            print(f"Renga Get Walls: Error creating curve, using point list: {e}")
-                            # Fallback to point list
-                            return points
+                            print(f"Renga Get Walls: Error creating polyline, trying SvSplineCurve: {e}")
+                            # Fallback: try SvSplineCurve with metric parameter
+                            try:
+                                return SvSplineCurve.from_points(points, is_cyclic=False, metric='DISTANCE')
+                            except Exception as e2:
+                                print(f"Renga Get Walls: Error creating curve, using point list: {e2}")
+                                # Fallback to point list
+                                return points
                     else:
                         # Return as list of points if curve utils not available
                         return points

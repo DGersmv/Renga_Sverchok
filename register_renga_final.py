@@ -139,3 +139,4 @@ if all_registered:
     log("\n✓ Проверьте Info панель (Window > Info) для деталей")
 
 
+

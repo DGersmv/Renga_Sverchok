@@ -3,7 +3,7 @@ using System.Drawing;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel.Attributes;
 
-namespace SverchokRenga.Components
+namespace GrasshopperRNG.Components
 {
     /// <summary>
     /// Custom attributes for RengaCreateColumnsComponent

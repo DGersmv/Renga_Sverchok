@@ -82,3 +82,4 @@ Write-Host "5. Проверьте консоль на сообщения 'Renga 
 Write-Host "6. Ноды должны появиться в категории 'Renga' в меню Sverchok" -ForegroundColor White
 
 
+

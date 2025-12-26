@@ -1,6 +1,6 @@
 using Grasshopper.Kernel.Attributes;
 
-namespace SverchokRenga.Components
+namespace GrasshopperRNG.Components
 {
     /// <summary>
     /// Custom attributes for RengaGetWallsComponent

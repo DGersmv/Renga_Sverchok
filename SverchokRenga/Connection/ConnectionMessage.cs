@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SverchokRenga.Connection
+namespace GrasshopperRNG.Connection
 {
     /// <summary>
     /// Base message class for communication protocol
