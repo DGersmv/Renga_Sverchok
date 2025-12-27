@@ -9,8 +9,25 @@ print("\n" + "="*60)
 print("ПРОВЕРКА НОД RENGA")
 print("="*60 + "\n")
 
-# Путь к нодам
-renga_path = r"C:\Users\DGer\AppData\Roaming\Blender Foundation\Blender\5.0\scripts\addons\sverchok-master\nodes\renga"
+# Путь к нодам - автоматическое определение
+import pathlib
+blender_version = bpy.app.version_string.split('.')[0] + '.' + bpy.app.version_string.split('.')[1]
+user_home = pathlib.Path.home()
+renga_path = user_home / "AppData" / "Roaming" / "Blender Foundation" / "Blender" / blender_version / "scripts" / "addons" / "sverchok-master" / "nodes" / "renga"
+renga_path = str(renga_path)
+
+# Альтернативный путь (если первый не найден)
+if not os.path.exists(renga_path):
+    # Попробуем найти папку Sverchok вручную
+    possible_paths = [
+        user_home / "AppData" / "Roaming" / "Blender Foundation" / "Blender" / blender_version / "scripts" / "addons" / "sverchok-master" / "nodes" / "renga",
+        user_home / "AppData" / "Roaming" / "Blender Foundation" / "Blender" / "5.0" / "scripts" / "addons" / "sverchok-master" / "nodes" / "renga",
+        user_home / "AppData" / "Roaming" / "Blender Foundation" / "Blender" / "4.2" / "scripts" / "addons" / "sverchok-master" / "nodes" / "renga",
+    ]
+    for path in possible_paths:
+        if os.path.exists(str(path)):
+            renga_path = str(path)
+            break
 
 # Проверка 1: Существует ли папка
 if os.path.exists(renga_path):

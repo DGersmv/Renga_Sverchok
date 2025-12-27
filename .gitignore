@@ -25,8 +25,6 @@ bld/
 *.sln.docstates
 
 # Build results
-[Dd]ebug/
-[Rr]elease/
 *.dll
 *.pdb
 *.exe
@@ -51,11 +49,24 @@ _ReSharper*/
 .idea/
 *.sln.iml
 
-# User-specific files
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
+# Temporary and debug files
+*.bat
+*.ps1
+*_check.py
+*_register*.py
+*_menu*.py
+*_YAML.py
+ИСПРАВИТЬ_*.py
+ПРОВЕРКА_*.py
+ДОБАВИТЬ_*.py
+force_*.py
+check_*.py
+test_*.py
+final_*.py
+register_*.py
+update_*.py
+FIX_*.bat
+FIX_*.py
 
 
 

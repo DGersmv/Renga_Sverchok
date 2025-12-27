@@ -46,13 +46,20 @@ Renga_Sverchok/
 
 ### Ноды Sverchok
 
-1. Скопируйте папку `sverchok_nodes` в директорию аддона Sverchok:
-   ```
-   [Blender Install Path]\3.x\scripts\addons\sverchok-master\nodes\renga\
-   ```
-   Или переименуйте `sverchok_nodes` в `renga` и скопируйте в `nodes\` директорию Sverchok.
+**Простая установка (рекомендуется):**
 
-2. Перезапустите Blender - ноды автоматически появятся в категории "Renga" в меню добавления нод Sverchok.
+1. Скопируйте папку `renga` из `sverchok_nodes/renga` в папку Sverchok:
+   ```
+   C:\Users\ВАШЕ_ИМЯ\AppData\Roaming\Blender Foundation\Blender\5.0\scripts\addons\sverchok-master\nodes\renga
+   ```
+
+2. Перезапустите Blender полностью
+
+3. Перезагрузите аддон Sverchok (Edit > Preferences > Add-ons → Sverchok → выключить/включить)
+
+4. Ноды автоматически появятся в категории **"Renga"** в меню добавления нод Sverchok
+
+**Подробная инструкция:** см. файл [INSTALL.md](INSTALL.md)
 
 ## Использование
 
@@ -76,6 +83,13 @@ Renga_Sverchok/
 3. Добавьте ноду **"Renga Get Walls"**:
    - Подключите выход Client от ноды "Renga Connect" (опционально)
    - Установите Update = True для получения стен из Renga
+
+## Особенности
+
+- ✅ **Автоматическая установка** - просто скопируйте папку и перезапустите Blender
+- ✅ **Автоматическая регистрация** - ноды регистрируются автоматически
+- ✅ **Автоматическое добавление в меню** - секция Renga появляется в меню Sverchok автоматически
+- ✅ **Не требует ручной настройки** - все работает "из коробки"
 
 ## Функциональность
 

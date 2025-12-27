@@ -60,6 +60,7 @@ class SvRengaConnectNode(SverchCustomTreeNode, bpy.types.Node):
     bl_label = 'Renga Connect'
     bl_icon = 'NETWORK_DRIVE'
     sv_icon = 'NETWORK_DRIVE'
+    sv_category = "Renga"
     
     port: IntProperty(
         name='Port',
@@ -182,9 +183,25 @@ class SvRengaConnectNode(SverchCustomTreeNode, bpy.types.Node):
 
 
 def register():
-    bpy.utils.register_class(SvRengaConnectNode)
+    """Регистрация ноды (вызывается Sverchok автоматически)"""
+    try:
+        # Проверяем, не зарегистрирована ли уже
+        if 'SvRengaConnectNode' in dir(bpy.types):
+            return  # Уже зарегистрирована
+        
+        bpy.utils.register_class(SvRengaConnectNode)
+    except ValueError as e:
+        if "already registered" in str(e).lower():
+            pass  # Уже зарегистрирована, это нормально
+        else:
+            raise
 
 
 def unregister():
-    bpy.utils.unregister_class(SvRengaConnectNode)
+    """Отмена регистрации ноды"""
+    try:
+        if 'SvRengaConnectNode' in dir(bpy.types):
+            bpy.utils.unregister_class(SvRengaConnectNode)
+    except:
+        pass
 

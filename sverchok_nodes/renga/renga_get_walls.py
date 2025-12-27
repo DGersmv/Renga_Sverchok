@@ -82,6 +82,7 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
     bl_label = 'Renga Get Walls'
     bl_icon = 'MESH_CUBE'
     sv_icon = 'MESH_CUBE'
+    sv_category = "Renga"
     
     update_trigger: BoolProperty(
         name='Update',
@@ -375,9 +376,25 @@ class SvRengaGetWallsNode(SverchCustomTreeNode, bpy.types.Node):
 
 
 def register():
-    bpy.utils.register_class(SvRengaGetWallsNode)
+    """Регистрация ноды (вызывается Sverchok автоматически)"""
+    try:
+        # Проверяем, не зарегистрирована ли уже
+        if 'SvRengaGetWallsNode' in dir(bpy.types):
+            return  # Уже зарегистрирована
+        
+        bpy.utils.register_class(SvRengaGetWallsNode)
+    except ValueError as e:
+        if "already registered" in str(e).lower():
+            pass  # Уже зарегистрирована, это нормально
+        else:
+            raise
 
 
 def unregister():
-    bpy.utils.unregister_class(SvRengaGetWallsNode)
+    """Отмена регистрации ноды"""
+    try:
+        if 'SvRengaGetWallsNode' in dir(bpy.types):
+            bpy.utils.unregister_class(SvRengaGetWallsNode)
+    except:
+        pass
 
